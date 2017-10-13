@@ -1,6 +1,5 @@
 package com.spid.android.sdk.request;
 
-import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
 
 import com.spid.android.sdk.SPiDClient;
@@ -10,24 +9,17 @@ import com.spid.android.sdk.listener.SPiDRequestListener;
 import com.spid.android.sdk.logger.SPiDLogger;
 import com.spid.android.sdk.response.SPiDResponse;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.params.HttpClientParams;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Contains a request to SPiD, note that each request can only be used once since it extends <code>AsyncTask</code>
@@ -192,46 +184,38 @@ public class SPiDRequest extends AsyncTask<Void, Void, SPiDResponse> {
      */
     @Override
     protected SPiDResponse doInBackground(Void... voids) {
-        AndroidHttpClient httpClient = null;
+        OkHttpClient client = SPiDClient.getInstance().getHttpClient();
+        Request.Builder requestBuilder = new Request.Builder();
+        Call httpCall = null;
+
         try {
-            HttpRequestBase httpRequest;
             if (POST.equalsIgnoreCase(method)) {
-                httpRequest = new HttpPost(url);
-
-                List<NameValuePair> postList = new ArrayList<>();
+                FormBody.Builder formBuilder = new FormBody.Builder();
                 for (Map.Entry<String, String> entry : body.entrySet()) {
-                    postList.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+                    formBuilder.add(entry.getKey(), entry.getValue());
                 }
-
-                ((HttpPost) httpRequest).setEntity(new UrlEncodedFormEntity(postList, "UTF-8"));
+                requestBuilder.url(url);
+                requestBuilder.post(formBuilder.build());
             } else {
-                httpRequest = new HttpGet(url + getQueryAsString());
+                requestBuilder.url(url + getQueryAsString());
             }
 
             // Add custom User-Agent
-            headers.put("User-Agent", SPiDClient.getInstance().getConfig().getUserAgent());
-
-            List<Header> headerList = new ArrayList<>();
+            requestBuilder.addHeader("User-Agent", SPiDClient.getInstance().getConfig().getUserAgent());
             for (Map.Entry<String, String> entry : headers.entrySet()) {
-                headerList.add(new BasicHeader(entry.getKey(), entry.getValue()));
+                requestBuilder.addHeader(entry.getKey(), entry.getValue());
             }
 
-            Header[] headerArray = new Header[headerList.size()];
-            httpRequest.setHeaders(headerList.toArray(headerArray));
-
-            HttpClientParams.setRedirecting(httpRequest.getParams(), false);
-
-            httpClient = AndroidHttpClient.newInstance(SPiDClient.getInstance().getConfig().getUserAgent());
-            HttpResponse httpResponse = httpClient.execute(httpRequest);
-
+            httpCall = client.newCall(requestBuilder.build());
+            Response httpResponse = httpCall.execute();
             return new SPiDResponse(httpResponse);
         } catch (IOException e) {
             return new SPiDResponse(e);
         } catch (Exception e) {
             return new SPiDResponse(e);
         } finally {
-            if (httpClient != null) {
-                httpClient.close();
+            if (httpCall != null) {
+                httpCall.cancel();
             }
         }
     }

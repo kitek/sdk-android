@@ -5,17 +5,16 @@ import android.text.TextUtils;
 import com.spid.android.sdk.exceptions.SPiDException;
 import com.spid.android.sdk.exceptions.SPiDInvalidResponseException;
 
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.Headers;
+import okhttp3.Response;
 
 /**
  * Contains a response from SPiD
@@ -46,30 +45,17 @@ public class SPiDResponse {
      *
      * @param httpResponse The response from SPiD
      */
-    public SPiDResponse(HttpResponse httpResponse) {
-        code = httpResponse.getStatusLine().getStatusCode();
+    public SPiDResponse(Response httpResponse) throws IOException {
+        code = httpResponse.code();
         headers = new HashMap<>();
         exception = null;
-        BufferedReader reader = null;
 
-        for (Header header : httpResponse.getAllHeaders()) {
-            headers.put(header.getName(), header.getValue());
+        Headers responseHeaders = httpResponse.headers();
+        for (int i = 0; i < responseHeaders.size(); i++) {
+            headers.put(responseHeaders.name(i), responseHeaders.value(i));
         }
 
-        try {
-            reader = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent()));
-            StringBuilder builder = new StringBuilder();
-            String line = reader.readLine();
-            while (line != null) {
-                builder.append(line);
-                line = reader.readLine();
-            }
-            body = builder.toString();
-        } catch (IOException ioe) {
-            exception = ioe;
-        } finally {
-            closeQuietly(reader);
-        }
+        body = httpResponse.body().string();
 
         if (!TextUtils.isEmpty(body)) {
             try {
@@ -87,16 +73,6 @@ public class SPiDResponse {
 
         if (!isSuccessful()) {
             exception = SPiDException.create(jsonObject);
-        }
-    }
-
-    private void closeQuietly(BufferedReader reader) {
-        if(reader != null) {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                // ignore
-            }
         }
     }
 

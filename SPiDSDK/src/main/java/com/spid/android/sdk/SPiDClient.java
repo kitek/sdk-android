@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+
 /**
  * Main class for SPiD, contains a singleton
  */
@@ -60,7 +62,8 @@ public class SPiDClient {
     /**
      * Constructor for SPiDClient, private since class is a singleton and should always be accessed through <code>getInstance()</code>
      */
-    protected SPiDClient() { }
+    protected SPiDClient() {
+    }
 
     /**
      * Singleton method for SPiDClient which returns the SPiDClient instance
@@ -69,6 +72,13 @@ public class SPiDClient {
      */
     public static SPiDClient getInstance() {
         return instance;
+    }
+
+    /**
+     * @return HTTP Client
+     */
+    public OkHttpClient getHttpClient() {
+        return this.config.getHttpClient();
     }
 
     /**
@@ -83,7 +93,6 @@ public class SPiDClient {
 
     /**
      * Redirects to browser for authorization using a Intent
-     *
      */
     public void browserAuthorization() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SPiDUrl.getAuthorizationURL()));
@@ -93,7 +102,6 @@ public class SPiDClient {
 
     /**
      * Redirects to browser for authorization using a Intent
-     *
      */
     public void browserSignup() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SPiDUrl.getSignupURL()));
@@ -103,7 +111,6 @@ public class SPiDClient {
 
     /**
      * Redirects to browser for authorization using a Intent
-     *
      */
     public void browserForgotPassword() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SPiDUrl.getForgotPasswordURL()));
@@ -124,7 +131,7 @@ public class SPiDClient {
     /**
      * Handles incoming Intent if it is sent from SPiD
      *
-     * @param data Intent data
+     * @param data     Intent data
      * @param listener The SPiDAuthorizationListener to handle the callback
      * @return <code>true</code> if <code>Intent</code> was handled otherwise <code>false</code>
      */
@@ -172,7 +179,6 @@ public class SPiDClient {
 
     /**
      * Redirects to browser for logout
-     *
      */
     public void browserLogout() {
         if (token != null) {
@@ -398,7 +404,6 @@ public class SPiDClient {
     }
 
     /**
-     *
      * @return the number of requests waiting to be executed
      */
     public int getWaitingRequestsQueueSize() {

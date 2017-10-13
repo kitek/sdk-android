@@ -2,6 +2,8 @@ package com.spid.android.sdk.configuration;
 
 import android.content.Context;
 
+import okhttp3.OkHttpClient;
+
 /**
  * Contains a configuration for the SPiD SDK
  */
@@ -10,6 +12,7 @@ public class SPiDConfiguration {
     private final String userAgent;
 
     private Context context;
+    private OkHttpClient httpClient;
     private SPiDEnvironment spidEnvironment;
     private Boolean isDebugMode;
 
@@ -46,7 +49,12 @@ public class SPiDConfiguration {
      * @param userAgent         SPiD custom User-Agent
      * @param context           Android application context
      */
-    protected SPiDConfiguration(String clientID, String clientSecret, String signSecret, String appURLScheme, SPiDEnvironment spidEnvironment, String redirectURL, String authorizationURL, String registrationURL, String forgotPasswordURL, String tokenURL, String serverClientID, String serverRedirectUri, String apiVersion, Boolean debugMode, String userAgent, Context context) {
+    protected SPiDConfiguration(String clientID, String clientSecret, String signSecret,
+                                String appURLScheme, SPiDEnvironment spidEnvironment,
+                                String redirectURL, String authorizationURL, String registrationURL,
+                                String forgotPasswordURL, String tokenURL, String serverClientID,
+                                String serverRedirectUri, String apiVersion, Boolean debugMode,
+                                String userAgent, Context context, OkHttpClient httpClient) {
         this.clientID = clientID;
         this.clientSecret = clientSecret;
         this.signSecret = signSecret;
@@ -63,6 +71,7 @@ public class SPiDConfiguration {
         this.isDebugMode = debugMode;
         this.userAgent = userAgent;
         this.context = context;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -274,5 +283,19 @@ public class SPiDConfiguration {
      */
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    /**
+     * @return HTTP client
+     */
+    public OkHttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    /**
+     * @param httpClient HTTP client
+     */
+    public void setHttpClient(OkHttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 }

@@ -9,8 +9,9 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import com.spid.android.sdk.BuildConfig;
-import com.spid.android.sdk.SPiDClient;
 import com.spid.android.sdk.logger.SPiDLogger;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Builder class for SPiDConfiguration
@@ -18,6 +19,7 @@ import com.spid.android.sdk.logger.SPiDLogger;
 public class SPiDConfigurationBuilder {
 
     private Context context;
+    private OkHttpClient httpClient;
     private SPiDEnvironment spidEnvironment;
     private Boolean debugMode = Boolean.FALSE;
 
@@ -34,7 +36,8 @@ public class SPiDConfigurationBuilder {
     private String serverRedirectUri;
     private String apiVersion = "2";
 
-    public SPiDConfigurationBuilder(Context context, SPiDEnvironment spidEnvironment, String clientID, String clientSecret, String appURLScheme) {
+    public SPiDConfigurationBuilder(Context context, SPiDEnvironment spidEnvironment, String clientID,
+                                    String clientSecret, String appURLScheme) {
         this.context = context;
         this.spidEnvironment = spidEnvironment;
         this.clientID = clientID;
@@ -120,6 +123,11 @@ public class SPiDConfigurationBuilder {
      */
     public SPiDConfigurationBuilder serverRedirectUri(String serverRedirectUri) {
         this.serverRedirectUri = serverRedirectUri;
+        return this;
+    }
+
+    public SPiDConfigurationBuilder httpClient(OkHttpClient httpClient) {
+        this.httpClient = httpClient;
         return this;
     }
 
@@ -241,6 +249,9 @@ public class SPiDConfigurationBuilder {
         }
 
         String userAgent = getUserAgent();
+        if (httpClient == null) {
+            httpClient = new OkHttpClient();
+        }
 
         return new SPiDConfiguration(
                 clientID,
@@ -258,6 +269,8 @@ public class SPiDConfigurationBuilder {
                 apiVersion,
                 debugMode,
                 userAgent,
-                context);
+                context,
+                httpClient
+        );
     }
 }
