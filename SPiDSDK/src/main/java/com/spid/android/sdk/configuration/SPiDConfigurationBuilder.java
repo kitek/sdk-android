@@ -35,6 +35,7 @@ public class SPiDConfigurationBuilder {
     private String serverClientID;
     private String serverRedirectUri;
     private String apiVersion = "2";
+    private String userAgent;
 
     public SPiDConfigurationBuilder(Context context, SPiDEnvironment spidEnvironment, String clientID,
                                     String clientSecret, String appURLScheme) {
@@ -128,6 +129,11 @@ public class SPiDConfigurationBuilder {
 
     public SPiDConfigurationBuilder httpClient(OkHttpClient httpClient) {
         this.httpClient = httpClient;
+        return this;
+    }
+
+    public SPiDConfigurationBuilder userAgent(String userAgent) {
+        this.userAgent = userAgent;
         return this;
     }
 
@@ -247,8 +253,9 @@ public class SPiDConfigurationBuilder {
         if (serverRedirectUri == null || TextUtils.isEmpty(serverRedirectUri.trim())) {
             serverRedirectUri = redirectURL;
         }
-
-        String userAgent = getUserAgent();
+        if (null == userAgent) {
+            userAgent = getUserAgent();
+        }
         if (httpClient == null) {
             httpClient = new OkHttpClient();
         }
